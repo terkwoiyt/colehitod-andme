@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PLANNING RAMADHAN 2026</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--main:#b88acb;
+--soft:#f5ecfa;
+}
+body{
+margin:0;
+font-family:'Poppins',sans-serif;
+background:var(--soft);
+color:#333;
+}
+h1{
+font-family:'Baloo 2',cursive;
+text-align:center;
+font-size:48px;
+margin-top:20px;
+color:var(--main);
+}
+.top-card{
+background:white;
+max-width:1000px;
+margin:20px auto;
+padding:20px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.05);
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+}
+input,select{
+padding:8px;
+border-radius:10px;
+border:1px solid #ddd;
+}
+.quote-box{
+max-width:400px;
+}
+.quote{
+font-weight:600;
+}
+.translate{
+font-size:14px;
+opacity:.7;
+margin-top:5px;
+}
+
+.section{
+background:white;
+max-width:1000px;
+margin:20px auto;
+padding:20px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:12px;
+}
+th,td{
+border:1px solid #eee;
+padding:6px;
+text-align:center;
+}
+th{
+background:var(--main);
+color:white;
+}
+.daily-title{
+text-align:left;
+font-weight:600;
+}
+
+.battery-day{
+display:flex;
+justify-content:space-between;
+margin-top:10px;
+}
+.battery{
+width:20px;
+height:40px;
+border:2px solid var(--main);
+border-radius:5px;
+position:relative;
+}
+.battery::after{
+content:"";
+position:absolute;
+top:-6px;
+left:5px;
+width:8px;
+height:4px;
+background:var(--main);
+border-radius:2px;
+}
+.level{
+position:absolute;
+bottom:0;
+width:100%;
+background:var(--main);
+}
+
+.percent-row{
+display:flex;
+justify-content:space-between;
+font-size:11px;
+margin-top:10px;
+}
+
+canvas{
+width:100%;
+height:200px;
+margin-top:20px;
+}
+
+button{
+padding:10px 18px;
+border:none;
+border-radius:12px;
+background:var(--main);
+color:white;
+font-weight:600;
+cursor:pointer;
+margin-top:15px;
+}
+
+.footer{
+text-align:center;
+font-size:13px;
+margin:30px;
+opacity:.7;
+}
+
+.popup{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.4);
+display:none;
+align-items:center;
+justify-content:center;
+}
+.popup-box{
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+animation:pop .4s ease;
+}
+@keyframes pop{
+from{transform:scale(.7);opacity:0}
+to{transform:scale(1);opacity:1}
+}
+</style>
+</head>
+
+<body>
+
+<h1>PLANNING RAMADHAN 2026</h1>
+
+<div class="top-card">
+<div>
+<input placeholder="Enter your name">
+<br><br>
+<select id="theme">
+<option value="#b88acb">Soft Lilac</option>
+<option value="#c7a17a">Soft Milo</option>
+<option value="#bfc3c9">Soft Grey</option>      <option value="#f7b2d9">Soft Pink</option>
+<option value="#a7c7ff">Soft Blue</option>
+<option value="#aee5d8">Soft Mint</option>
+<option value="#ffc9a9">Soft Peach</option>
+<option value="#d6c9ff">Soft Lavender</option>
+</select>
+<select id="quoteSelect"></select>
+</div>
+
+<div class="quote-box">
+<div class="quote" id="quoteText"></div>
+<div class="translate" id="quoteTrans"></div>
+</div>
+</div>
+
+<div class="section">
+<h3>Daily Habits</h3>
+<table id="habitTable"></table>
+
+<div class="battery-day" id="batteryRow"></div>
+
+<div class="percent-row" id="percentRow"></div>
+
+<canvas id="chart"></canvas>
+</div>
+
+<div class="section">
+<h3>Target Khatam Qur'an</h3>
+<div id="quranTable"></div>
+</div>
+
+<div style="text-align:center">
+<button onclick="finish()">Finish & View My Score</button>
+<button onclick="location.reload()">Reset My Planner</button>
+</div>
+
+<div class="footer">
+This site was created by Auza — Instagram: @luzvacia_
+</div>
+
+<div class="popup" id="popup">
+<div class="popup-box">
+<h2>Your Final Score</h2>
+<h1 id="finalScore"></h1>
+<p id="detail"></p>
+<button onclick="popup.style.display='none'">Close</button>
+</div>
+</div>
+
+<script>
+const habits=["Tahajud","Puasa","Subuh","Dzikir Pagi","Dzuhur","Ashar","Maghrib","Isya","Taraweh"];
+const days=30;
+let history=new Array(days).fill(0);
+
+const table=document.getElementById("habitTable");
+function buildHabits(){
+let h="<tr><th>Habit</th>";
+for(let d=1;d<=days;d++)h+="<th>"+d+"</th>";
+h+="</tr>";
+habits.forEach(hab=>{
+h+="<tr><td class='daily-title'>"+hab+"</td>";
+for(let d=1;d<=days;d++){
+h+="<td><input type='checkbox' class='cb' data-day='"+d+"'></td>";
+}
+h+="</tr>";
+});
+table.innerHTML=h;
+}
+buildHabits();
+
+function update(){
+for(let d=1;d<=days;d++){
+let checks=document.querySelectorAll(".cb[data-day='"+d+"']");
+let done=0;
+checks.forEach(c=>{if(c.checked)done++;});
+let percent=Math.round(done/checks.length*100);
+history[d-1]=percent;
+}
+drawBattery();
+drawPercent();
+drawChart();
+}
+document.addEventListener("change",update);
+
+function drawBattery(){
+let row=document.getElementById("batteryRow");
+row.innerHTML="";
+history.forEach(p=>{
+let b=document.createElement("div");
+b.className="battery";
+let lvl=document.createElement("div");
+lvl.className="level";
+lvl.style.height=p+"%";
+b.appendChild(lvl);
+row.appendChild(b);
+});
+}
+
+function drawPercent(){
+let row=document.getElementById("percentRow");
+row.innerHTML="";
+history.forEach(p=>{
+let span=document.createElement("div");
+span.innerHTML="✔ "+p+"%";
+row.appendChild(span);
+});
+}
+
+function drawChart(){
+let ctx=document.getElementById("chart").getContext("2d");
+ctx.clearRect(0,0,800,200);
+ctx.beginPath();
+ctx.moveTo(0,200);
+history.forEach((v,i)=>{
+ctx.lineTo(i*30,200-(v*2));
+});
+ctx.lineTo(900,200);
+ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--main');
+ctx.globalAlpha=.3;
+ctx.fill();
+ctx.globalAlpha=1;
+}
+
+/* QURAN TABLE */
+function buildQuran(){
+let html="<table><tr><th>Subuh</th><th>Dzuhur</th><th>Ashar</th><th>Maghrib</th><th>Isya</th></tr>";
+let page=1;
+while(page<=604){
+html+="<tr>";
+for(let i=0;i<5;i++){
+let end=page+7;
+if(end>604)end=604;
+html+="<td><input type='checkbox'> "+page+"-"+end+"</td>";
+page=end+1;
+}
+html+="</tr>";
+}
+html+="</table>";
+document.getElementById("quranTable").innerHTML=html;
+}
+buildQuran();
+
+/* QUOTES */
+const quotes=[
+{q:"Allah does not burden a soul beyond that it can bear.",
+t:"Allah tidak membebani seseorang melainkan sesuai kesanggupannya."},
+{q:"Indeed, prayer prohibits immorality and wrongdoing.",
+t:"Sesungguhnya shalat mencegah dari perbuatan keji dan mungkar."}
+];
+const qs=document.getElementById("quoteSelect");
+quotes.forEach((e,i)=>{
+let opt=document.createElement("option");
+opt.value=i;
+opt.text="Quote "+(i+1);
+qs.appendChild(opt);
+});
+function changeQuote(){
+let i=qs.value;
+quoteText.textContent=quotes[i].q;
+quoteTrans.textContent=quotes[i].t;
+}
+qs.addEventListener("change",changeQuote);
+changeQuote();
+
+/* THEME */
+theme.onchange=()=>{
+document.documentElement.style.setProperty('--main',theme.value);
+};
+
+/* FINISH */
+function finish(){
+let avg=Math.round(history.reduce((a,b)=>a+b,0)/days);
+popup.style.display="flex";
+finalScore.textContent=avg+"%";
+detail.textContent="Average completion during Ramadhan: "+avg+"%";
+}
+</script>
+
+</body>
+</html>
