@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PLANNING RAMADHAN 2026</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --main:#b88acb;
+  --soft:#f5ecfa;
+}
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:var(--soft);
+  color:#333;
+}
+h1{
+  font-family:'Baloo 2',cursive;
+  text-align:center;
+  font-size:46px;
+  margin:20px 0;
+  color:var(--main);
+}
+.card{
+  background:#fff;
+  max-width:1100px;
+  margin:20px auto;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+.top{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+}
+input,select{
+  padding:8px 12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+.quote{
+  font-weight:600;
+}
+.quote-trans{
+  font-size:14px;
+  opacity:.8;
+}
+.quote-src{
+  font-size:12px;
+  opacity:.6;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+th,td{
+  border:1px solid #eee;
+  padding:6px;
+  text-align:center;
+}
+th{
+  background:var(--main);
+  color:white;
+}
+.daily-title{
+  text-align:left;
+  font-weight:600;
+}
+.battery-row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:15px;
+}
+.battery{
+  width:20px;
+  height:45px;
+  border:2px solid var(--main);
+  border-radius:5px;
+  position:relative;
+}
+.battery::after{
+  content:"";
+  position:absolute;
+  top:-6px;
+  left:5px;
+  width:8px;
+  height:4px;
+  background:var(--main);
+}
+.level{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  background:var(--main);
+}
+.percent-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  margin-top:6px;
+}
+canvas{
+  width:100%;
+  height:220px;
+  margin-top:20px;
+}
+.axis{
+  font-size:11px;
+  opacity:.6;
+  display:flex;
+  justify-content:space-between;
+}
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:12px;
+  background:var(--main);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+.footer{
+  text-align:center;
+  font-size:13px;
+  margin:30px;
+  opacity:.7;
+}
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.popup-box{
+  background:white;
+  padding:30px;
+  border-radius:20px;
+  text-align:center;
+  animation:pop .4s ease;
+}
+@keyframes pop{
+  from{transform:scale(.7);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+</style>
+</head>
+
+<body>
+
+<h1>PLANNING RAMADHAN 2026</h1>
+
+<div class="card top">
+  <div>
+    <input placeholder="Enter your name"><br><br>
+    <select id="theme">
+      <option value="#b88acb">Soft Lilac</option>
+      <option value="#c7a17a">Soft Milo</option>
+      <option value="#bfc3c9">Soft Grey</option>
+      <option value="#f7b2d9">Soft Pink</option>
+      <option value="#a7c7ff">Soft Blue</option>
+      <option value="#aee5d8">Soft Mint</option>
+      <option value="#ffc9a9">Soft Peach</option>
+      <option value="#d6c9ff">Soft Lavender</option>
+      
+  </select>
+    <select id="quoteSelect"></select>
+  </div>
+
+  <div>
+    <div class="quote" id="qText"></div>
+    <div class="quote-trans" id="qTrans"></div>
+    <div class="quote-src" id="qSrc"></div>
+  </div>
+</div>
+
+<div class="card">
+<h3>Daily Habits</h3>
+<table id="habitTable"></table>
+
+<div class="battery-row" id="batteryRow"></div>
+
+<div class="percent-row" id="completedRow"></div>
+<div class="percent-row" id="notCompletedRow"></div>
+
+<canvas id="chart"></canvas>
+<div class="axis">
+  <span>Day 1</span>
+  <span>Day 30</span>
+</div>
+<div class="axis">
+  <span>0%</span>
+  <span>100%</span>
+</div>
+</div>
+
+<div class="card">
+<h3>Khatam Al-Qur'an in 15 Days</h3>
+<div id="quranTable"></div>
+</div>
+
+<div style="text-align:center">
+<button onclick="finish()">Finish & View My Score</button>
+</div>
+
+<div class="footer">
+This site was created by Auza — Instagram: @luzvacia_
+</div>
+
+<div class="popup" id="popup">
+<div class="popup-box">
+<h2>Your Final Score</h2>
+<h1 id="finalScore"></h1>
+<p id="detail"></p>
+<button onclick="popup.style.display='none'">Close</button>
+</div>
+</div>
+
+<script>
+const habits=["Tahajud","Puasa","Subuh","Dzikir Pagi","Dzuhur","Ashar","Maghrib","Isya","Taraweh"];
+const days=30;
+let history=new Array(days).fill(0);
+
+function buildHabits(){
+ let t="<tr><th>Habit</th>";
+ for(let d=1;d<=days;d++)t+=`<th>${d}</th>`;
+ t+="</tr>";
+ habits.forEach(h=>{
+  t+=`<tr><td class="daily-title">${h}</td>`;
+  for(let d=1;d<=days;d++)
+   t+=`<td><input type="checkbox" data-day="${d}"></td>`;
+  t+="</tr>";
+ });
+ habitTable.innerHTML=t;
+}
+buildHabits();
+
+function update(){
+ for(let d=1;d<=days;d++){
+  let c=[...document.querySelectorAll(`[data-day="${d}"]`)];
+  let done=c.filter(x=>x.checked).length;
+  history[d-1]=Math.round(done/c.length*100)||0;
+ }
+ drawBattery(); drawPercent(); drawChart();
+}
+document.addEventListener("change",update);
+
+function drawBattery(){
+ batteryRow.innerHTML="";
+ history.forEach(p=>{
+  let b=document.createElement("div");
+  b.className="battery";
+  let l=document.createElement("div");
+  l.className="level";
+  l.style.height=p+"%";
+  b.appendChild(l);
+  batteryRow.appendChild(b);
+ });
+}
+
+function drawPercent(){
+ completedRow.innerHTML="";
+ notCompletedRow.innerHTML="";
+ history.forEach(p=>{
+  completedRow.innerHTML+=`<div>✔ ${p}%</div>`;
+  notCompletedRow.innerHTML+=`<div>✘ ${100-p}%</div>`;
+ });
+}
+
+function drawChart(){
+ let ctx=chart.getContext("2d");
+ ctx.clearRect(0,0,900,220);
+ ctx.beginPath();
+ ctx.moveTo(0,220);
+ history.forEach((v,i)=>ctx.lineTo(i*30,220-(v*2)));
+ ctx.lineTo(900,220);
+ ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--main');
+ ctx.globalAlpha=.3;
+ ctx.fill();
+ ctx.globalAlpha=1;
+}
+
+function finish(){
+ let avg=Math.round(history.reduce((a,b)=>a+b,0)/days);
+ popup.style.display="flex";
+ finalScore.textContent=avg+"%";
+ detail.textContent=`Rata-rata penyelesaian selama Ramadhan: ${avg}%`;
+}
+
+const quotes=[
+["Allah does not burden a soul beyond that it can bear.","Allah tidak membebani seseorang melainkan sesuai kesanggupannya.","QS. Al-Baqarah : 286"],
+["Indeed, prayer prohibits immorality and wrongdoing.","Sesungguhnya shalat mencegah dari perbuatan keji dan mungkar.","QS. Al-Ankabut : 45"],
+["And remember Me; I will remember you.","Ingatlah Aku, niscaya Aku ingat kepadamu.","QS. Al-Baqarah : 152"],
+["So be patient. Indeed, the promise of Allah is truth.","Maka bersabarlah, sesungguhnya janji Allah itu benar.","QS. Ar-Rum : 60"],
+["Indeed, with hardship comes ease.","Sesungguhnya bersama kesulitan ada kemudahan.","QS. Al-Insyirah : 6"]
+];
+quotes.forEach((q,i)=>{
+ let o=document.createElement("option");
+ o.value=i; o.text="Quote "+(i+1);
+ quoteSelect.appendChild(o);
+});
+function changeQuote(){
+ let q=quotes[quoteSelect.value];
+ qText.textContent=q[0];
+ qTrans.textContent=q[1];
+ qSrc.textContent=q[2];
+}
+quoteSelect.onchange=changeQuote;
+changeQuote();
+
+theme.onchange=()=>document.documentElement.style.setProperty('--main',theme.value);
+
+function buildQuran(){
+ let html="<table><tr><th>Subuh</th><th>Dzuhur</th><th>Ashar</th><th>Maghrib</th><th>Isya</th></tr>";
+ let p=1;
+ while(p<=604){
+  html+="<tr>";
+  for(let i=0;i<5;i++){
+   let e=Math.min(p+7,604);
+   html+=`<td><input type="checkbox"> ${p}-${e}</td>`;
+   p=e+1;
+  }
+  html+="</tr>";
+ }
+ html+="</table>";
+ quranTable.innerHTML=html;
+}
+buildQuran();
+</script>
+
+</body>
+</html>
